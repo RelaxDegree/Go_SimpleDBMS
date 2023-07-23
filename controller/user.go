@@ -44,6 +44,8 @@ func DecodeUserMsg(msg string, ipaddr string) string {
 		}
 	} else if lst[0] == "help" {
 		return "login [username] [password]\nregister [username] [password]\nchangepswd [username] [password]\nexit\n"
+	} else if isDBMsg(lst[0]) {
+		ret = decodeDBMsg(msg, ipaddr)
 	} else {
 		ret = "unknown command"
 	}
