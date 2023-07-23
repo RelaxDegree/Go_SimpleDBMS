@@ -3,7 +3,7 @@ package dao
 import "fmt"
 
 func DBQL(msg string) string {
-	var ret string
+	var ret string = ""
 	rows, err := DB.Query(msg)
 	if err != nil {
 		fmt.Println(err)
@@ -11,6 +11,11 @@ func DBQL(msg string) string {
 	}
 	defer rows.Close()
 	cols, err := rows.Columns()
+	values := make([][]byte, len(cols))
+	scans := make([]interface{}, len(cols))
+	for i := range values {
+		scans[i] = &values[i]
+	}
 	if err != nil {
 		fmt.Println(err)
 		return ret
@@ -19,14 +24,19 @@ func DBQL(msg string) string {
 		ret += cols[i] + "\t"
 	}
 	ret += "\n"
-	for rows.Next() {
-		var s, v string
-		for i := 0; i < len(cols); i++ {
-			rows.Scan(&v)
-			s += v + ": "
-			fmt.Printf("%v\n", v)
+	i := 0
+	for rows.Next() { //循环，让游标往下推
+		if err := rows.Scan(scans...); err != nil { //query.Scan查询出来的不定长值放到scans[i] = &values[i],也就是每行都放在values里
+			fmt.Println(err)
 		}
-		ret += s + "\n"
+		for k, v := range values { //每行数据是放在values里面，现在把它挪到row里
+			key := cols[k]
+			if key != "_row" {
+				ret += string(v) + "\t"
+			}
+			i++
+		}
+		ret += "\n"
 	}
 	return ret
 }
