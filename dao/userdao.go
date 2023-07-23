@@ -3,6 +3,7 @@ package dao
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -83,13 +84,15 @@ func UserChangePswd(username string, oldpswd string, newpswd string) bool {
 	return true
 }
 func Record(username string, msg string, ip string, ret string) bool {
-	stmt, err := DB.Prepare("INSERT INTO log(name, msg, ip, ret) VALUES(?, ?, ?, ?)")
+	stmt, err := DB.Prepare("INSERT INTO log(name, msg, ip, ret, datetime) VALUES(?, ?, ?, ?, ?)")
 	if err != nil {
 		fmt.Println(err)
 		return false
 	}
 	defer stmt.Close()
-	stmt.Exec(username, msg, ip, ret)
+	currentTime := time.Now()
+	time := currentTime.Format("2006-01-02 15:04:05")
+	stmt.Exec(username, msg, ip, ret, time)
 
 	return true
 }
